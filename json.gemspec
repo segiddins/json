@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+# stub: json 1.8.0 ruby lib
 
 Gem::Specification.new do |s|
   s.name = "json"
@@ -6,7 +7,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Florian Frank"]
-  s.date = "2013-05-13"
+  s.date = "2013-09-24"
   s.description = "This is a JSON implementation as a Ruby extension in C."
   s.email = "flori@ping.de"
   s.extensions = ["ext/json/ext/generator/extconf.rb", "ext/json/ext/parser/extconf.rb"]
@@ -16,7 +17,7 @@ Gem::Specification.new do |s|
   s.licenses = ["Ruby"]
   s.rdoc_options = ["--title", "JSON implemention for Ruby", "--main", "README.rdoc"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "2.0.3"
+  s.rubygems_version = "2.1.4"
   s.summary = "JSON Implementation for Ruby"
   s.test_files = ["./tests/test_json.rb", "./tests/test_json_addition.rb", "./tests/test_json_encoding.rb", "./tests/test_json_fixtures.rb", "./tests/test_json_generate.rb", "./tests/test_json_generic_object.rb", "./tests/test_json_string_matching.rb", "./tests/test_json_unicode.rb"]
 
