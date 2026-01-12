@@ -4,8 +4,9 @@
 
 static VALUE mJSON, eNestingError, Encoding_UTF_8;
 static VALUE CNaN, CInfinity, CMinusInfinity;
+static VALUE rb_cBigDecimal = Qundef;
 
-static ID i_new, i_try_convert, i_uminus, i_encode;
+static ID i_new, i_try_convert, i_uminus, i_encode, i_BigDecimal;
 
 static VALUE sym_max_nesting, sym_allow_nan, sym_allow_trailing_comma, sym_allow_control_characters, sym_symbolize_names, sym_freeze,
              sym_decimal_class, sym_on_load, sym_allow_duplicate_key;
@@ -837,9 +838,22 @@ static inline VALUE json_decode_float(JSON_ParserConfig *config, uint64_t mantis
         return rb_funcallv(config->decimal_class, config->decimal_method_id, 1, &text);
     }
 
+    // Automatically use BigDecimal for high-precision decimals (> 17 significant digits)
+    // that would lose precision when converted to Float
+    // We check the mantissa value itself rather than the digit count to handle
+    // numbers like 0.000000022471348024634545 which have leading zeros
+    if (RB_UNLIKELY(mantissa_digits > 17 && mantissa >= 100000000000000000ULL)) {
+        if (rb_cBigDecimal != Qundef) {
+            VALUE text = rb_str_new(start, end - start);
+            return rb_funcallv(rb_mKernel, i_BigDecimal, 1, &text);
+        }
+        // If BigDecimal is not available, fall back to regular float parsing
+        return json_decode_large_float(start, end - start);
+    }
+
     // Fall back to rb_cstr_to_dbl for potential subnormals (rare edge case)
     // Ryu has rounding issues with subnormals around 1e-310 (< 2.225e-308)
-    if (RB_UNLIKELY(mantissa_digits > 17 || mantissa_digits + exponent < -307)) {
+    if (RB_UNLIKELY(mantissa_digits + exponent < -307)) {
         return json_decode_large_float(start, end - start);
     }
 
@@ -1668,6 +1682,13 @@ void Init_parser(void)
     i_try_convert = rb_intern("try_convert");
     i_uminus = rb_intern("-@");
     i_encode = rb_intern("encode");
+    i_BigDecimal = rb_intern("BigDecimal");
+
+    // Check if BigDecimal is available for automatic high-precision decimal parsing
+    if (rb_const_defined(rb_cObject, rb_intern("BigDecimal"))) {
+        rb_cBigDecimal = rb_const_get(rb_cObject, rb_intern("BigDecimal"));
+        rb_gc_register_mark_object(rb_cBigDecimal);
+    }
 
     binary_encindex = rb_ascii8bit_encindex();
     utf8_encindex = rb_utf8_encindex();

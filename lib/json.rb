@@ -638,5 +638,12 @@ require 'json/common'
 #
 module JSON
   require 'json/version'
+
+  begin
+    require 'bigdecimal'
+  rescue LoadError
+  end
+
   require 'json/ext'
+  require 'json/bigdecimal_as_decimal'
 end

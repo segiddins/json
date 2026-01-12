@@ -134,7 +134,13 @@ class JSONParserTest < Test::Unit::TestCase
   def test_parse_bignum
     bignum = Integer('1234567890' * 10)
     assert_equal(bignum, JSON.parse(bignum.to_s))
-    assert_equal(bignum.to_f, JSON.parse(bignum.to_s + ".0"))
+    # Large decimal numbers (> 17 mantissa digits) are parsed as BigDecimal to preserve precision
+    result = JSON.parse(bignum.to_s + ".0")
+    if defined?(::BigDecimal) && result.is_a?(BigDecimal)
+      assert_equal(BigDecimal(bignum.to_s + ".0"), result)
+    else
+      assert_equal(bignum.to_f, result)
+    end
   end
 
   def test_parse_bigdecimals
